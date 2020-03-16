@@ -7,7 +7,7 @@ void GLClearError()
 	while (glGetError());
 }
 
-bool GLLogCall(const char* function, const char* file, int line)
+bool GLLogCall(const char* function, const char* file, const int& line)
 {
 	while (GLenum error = glGetError())
 	{
