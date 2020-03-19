@@ -5,11 +5,8 @@
 #include <iostream>
 #include <string>
 
+#include "GLErrors.h"
 #include "Renderer.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "VertexArray.h"
-#include "Shader.h"
 
 int main()
 {
@@ -34,7 +31,6 @@ int main()
 		std::cout << "GLEW Error!" << std::endl;
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
-
 	{
 		float positions[] = {
 			-0.5f,  0.5f,
@@ -47,10 +43,6 @@ int main()
 			1, 2, 3,
 			1, 2, 0
 		};
-
-		unsigned int vao;
-		GLCall(glGenVertexArrays(1, &vao));
-		GLCall(glBindVertexArray(vao));
 
 		VertexArray va;
 		VertexBuffer vb(positions, 4 * 2 * sizeof(float));
@@ -73,15 +65,11 @@ int main()
 		float increment = 0.05f;
 		while (!glfwWindowShouldClose(window))
 		{
-			GLCall(glClear(GL_COLOR_BUFFER_BIT));
-
+			Renderer::Clear();
 			shader.Bind();
 			shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
 
-			va.Bind();
-			ib.Bind();
-
-			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+			Renderer::Draw(va, ib, shader);
 
 			if (r > 1.0f)
 				increment = -0.05f;
@@ -94,8 +82,6 @@ int main()
 			glfwPollEvents();
 		}
 	}
-
 	glfwTerminate();
-
 	return 0;
 }
