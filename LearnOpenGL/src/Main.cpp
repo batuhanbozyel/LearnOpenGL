@@ -9,13 +9,20 @@
 #include "Renderer.h"
 #include "Texture.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+
 int main()
 {
 	GLFWwindow* window;
 	if (!glfwInit())
 		return -1;
 
-	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
 
 	if (!window)
 	{
@@ -33,11 +40,12 @@ int main()
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 	{
+		// 1280 720
 		float positions[] = {
-			-0.5f, -0.5f, 0.0f, 0.0f, // 0
-			 0.5f, -0.5f, 1.0f, 0.0f, // 1
-			 0.5f,  0.5f, 1.0f, 1.0f, // 2
-			-0.5f,  0.5f, 0.0f, 1.0f  // 3
+			  0.0f,   0.0f, 0.0f, 0.0f, // 0
+			100.0f,   0.0f, 1.0f, 0.0f, // 1
+			100.0f, 100.0f, 1.0f, 1.0f, // 2
+			  0.0f, 100.0f, 0.0f, 1.0f  // 3
 		};
 
 		unsigned int indices[] = {
@@ -58,28 +66,65 @@ int main()
 
 		IndexBuffer ib(indices, 6);
 
+		// Normalized device coordinates
+		glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
+		// Camera translation
+		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+		// Model translation
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+		
 		Shader shader("res/shader/Basic.shader");
+		shader.Bind();
 
 		Texture texture("res/textures/doge.png");
+		texture.Bind();
 
-		va.Unbind();
-		vb.Unbind();
-		ib.Unbind();
-		shader.Unbind();
-		texture.Unbind();
+		// ImGui implementation
+		ImGui::CreateContext();
+		ImGui::StyleColorsDark();
+
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init("#version 330");
+
+		glm::vec3 translation(0.0f, 0.0f, 0.0f);
+
 		while (!glfwWindowShouldClose(window))
 		{
 			Renderer::Clear();
-			shader.Bind();
-			texture.Bind();
+			
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+
+			model = glm::translate(glm::mat4(1.0f), translation);
+			glm::mat4 mvp = proj * view * model;
+
+			shader.SetUniformMat4f("u_MVP", mvp);
 			shader.SetUniform1i("u_Texture", 0);
+			
 			Renderer::Draw(va, ib, shader);
+
+			{
+				ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+				ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 1280.0f);
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+				ImGui::End();
+			}
+
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 			glfwSwapBuffers(window);
 
 			glfwPollEvents();
 		}
 	}
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
 	glfwTerminate();
 	return 0;
 }
