@@ -16,13 +16,17 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+#include "tests/TestClearColor.h"
+#include "tests/TestTexture.h"
+#include "tests/TestSlideBox.h"
+
 int main()
 {
 	GLFWwindow* window;
 	if (!glfwInit())
 		return -1;
 
-	window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(1920, 1080, "Hello World", glfwGetPrimaryMonitor(), NULL);
 
 	if (!window)
 	{
@@ -40,44 +44,8 @@ int main()
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 	{
-		// 1280 720
-		float positions[] = {
-			  0.0f,   0.0f, 0.0f, 0.0f, // 0
-			100.0f,   0.0f, 1.0f, 0.0f, // 1
-			100.0f, 100.0f, 1.0f, 1.0f, // 2
-			  0.0f, 100.0f, 0.0f, 1.0f  // 3
-		};
-
-		unsigned int indices[] = {
-			0, 1, 2,
-			2, 3, 0
-		};
-
 		GLCall(glEnable(GL_BLEND));
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-		VertexArray va;
-		VertexBuffer vb(positions, 4 * 4 * sizeof(float));
-
-		VertexBufferLayout layout;
-		layout.Push<float>(2);
-		layout.Push<float>(2);
-		va.AddBuffer(vb, layout);
-
-		IndexBuffer ib(indices, 6);
-
-		// Normalized device coordinates
-		glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
-		// Camera translation
-		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-		// Model translation
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-		
-		Shader shader("res/shader/Basic.shader");
-		shader.Bind();
-
-		Texture texture("res/textures/doge.png");
-		texture.Bind();
 
 		// ImGui implementation
 		ImGui::CreateContext();
@@ -86,40 +54,46 @@ int main()
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 330");
 
-		glm::vec3 translation(0.0f, 0.0f, 0.0f);
+		test::Test* currentTest = nullptr;
+		test::TestMenu* testMenu = new test::TestMenu(currentTest);
+		currentTest = testMenu;
 
+		testMenu->RegisterTest<test::TestClearColor>("Clear Color");
+		testMenu->RegisterTest<test::TestTexture>("Texture 2D");
+		testMenu->RegisterTest<test::TestSlideBox>("Slider Box");
 		while (!glfwWindowShouldClose(window))
 		{
+			GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 			Renderer::Clear();
-			
+
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 
-			model = glm::translate(glm::mat4(1.0f), translation);
-			glm::mat4 mvp = proj * view * model;
-
-			shader.SetUniformMat4f("u_MVP", mvp);
-			shader.SetUniform1i("u_Texture", 0);
-			
-			Renderer::Draw(va, ib, shader);
-
+			if (currentTest)
 			{
-				ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-				ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 1280.0f);
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
+				currentTest->OnUpdate(0.0f);
+				currentTest->OnRender();
+				ImGui::Begin("Test");
+				if (currentTest != testMenu && ImGui::Button("<-"))
+				{
+					delete currentTest;
+					currentTest = testMenu;
+				}
+				currentTest->OnImGuiRender();
+				if (ImGui::Button("Exit"))
+					break;
 				ImGui::End();
 			}
-
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 			glfwSwapBuffers(window);
-
 			glfwPollEvents();
 		}
+		delete currentTest;
+		if (testMenu != currentTest)
+			delete testMenu;
 	}
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
