@@ -27,7 +27,6 @@ namespace test
 
 		glm::mat4 m_View, m_Proj;
 		glm::vec3 m_Translation;
-		float m_Color[4];
 
 		float incTranslationX;
 		float incTranslationY;

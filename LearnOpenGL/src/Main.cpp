@@ -19,6 +19,7 @@
 #include "tests/TestClearColor.h"
 #include "tests/TestTexture.h"
 #include "tests/TestSlideBox.h"
+#include "tests/TestBatchRendering.h"
 
 int main()
 {
@@ -61,6 +62,7 @@ int main()
 		testMenu->RegisterTest<test::TestClearColor>("Clear Color");
 		testMenu->RegisterTest<test::TestTexture>("Texture 2D");
 		testMenu->RegisterTest<test::TestSlideBox>("Slider Box");
+		testMenu->RegisterTest<test::TestBatchRendering>("Batch Rendering");
 		while (!glfwWindowShouldClose(window))
 		{
 			GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
