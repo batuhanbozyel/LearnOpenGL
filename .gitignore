@@ -31,3 +31,9 @@
 *.exe
 *.out
 *.app
+.vs/LearnOpenGL/v16/.suo
+.vs/LearnOpenGL/v16/Browse.VC.db
+LearnOpenGL/Debug/LearnOpenGL.log
+LearnOpenGL/Debug/LearnOpenGL.log
+LearnOpenGL/Debug/LearnOpenGL.tlog/CL.command.1.tlog
+LearnOpenGL/Debug/LearnOpenGL.tlog/CL.read.1.tlog

@@ -61,6 +61,7 @@ namespace test
 	void TestBatchRendering::OnImGuiRender()
 	{
 		ImGui::SliderFloat3("model", &m_Translation.x, 0.0f, 1000.0f);
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 
 }

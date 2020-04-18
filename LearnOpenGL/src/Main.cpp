@@ -20,6 +20,8 @@
 #include "tests/TestTexture.h"
 #include "tests/TestSlideBox.h"
 #include "tests/TestBatchRendering.h"
+#include "tests/TestCircle.h"
+#include "tests/TestCircleOptimized.h"
 
 int main()
 {
@@ -27,6 +29,7 @@ int main()
 	if (!glfwInit())
 		return -1;
 
+	glfwWindowHint(GLFW_SAMPLES, 4);
 	window = glfwCreateWindow(1920, 1080, "Hello World", glfwGetPrimaryMonitor(), NULL);
 
 	if (!window)
@@ -37,7 +40,7 @@ int main()
 
 	glfwMakeContextCurrent(window);
 
-	glfwSwapInterval(1);
+	//glfwSwapInterval(1);
 
 	// This is where you can start using GLEW
 	if (glewInit() != GLEW_OK)
@@ -45,6 +48,7 @@ int main()
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 	{
+		GLCall(glEnable(GL_MULTISAMPLE));
 		GLCall(glEnable(GL_BLEND));
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
@@ -63,6 +67,8 @@ int main()
 		testMenu->RegisterTest<test::TestTexture>("Texture 2D");
 		testMenu->RegisterTest<test::TestSlideBox>("Slider Box");
 		testMenu->RegisterTest<test::TestBatchRendering>("Batch Rendering");
+		testMenu->RegisterTest<test::TestCircle>("Circle");
+		testMenu->RegisterTest<test::TestCircleOptimized>("Circle Optimized");
 		while (!glfwWindowShouldClose(window))
 		{
 			GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
